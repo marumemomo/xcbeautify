@@ -43,6 +43,7 @@ package final class Parser {
         ExtractAppIntentsMetadataCaptureGroup.self,
         FailingTestCaptureGroup.self,
         UIFailingTestCaptureGroup.self,
+        XCTExpectFailureCaptureGroup.self,
         RestartingTestCaptureGroup.self,
         GenerateAssetSymbolsCaptureGroup.self,
         GenerateCoverageDataCaptureGroup.self,

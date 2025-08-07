@@ -98,6 +98,7 @@ protocol OutputRendering {
     func formatTIFFUtil(group: TIFFutilCaptureGroup) -> String?
     func formatTouch(group: TouchCaptureGroup) -> String
     func formatUIFailingTest(group: UIFailingTestCaptureGroup) -> String
+    func formatXCTExpectFailure(group: XCTExpectFailureCaptureGroup) -> String
     func formatUndefinedSymbolLocation(group: UndefinedSymbolLocationCaptureGroup) -> String
     func formatValidate(group: ValidateCaptureGroup) -> String
     func formatValidateEmbeddedBinary(group: ValidateEmbeddedBinaryCaptureGroup) -> String
@@ -472,6 +473,14 @@ extension OutputRendering {
         let file = group.file
         let failingReason = group.reason
         return colored ? Format.indent + TestStatus.fail.foreground.Red + " " + file + ", " + failingReason : Format.indent + TestStatus.fail + " " + file + ", " + failingReason
+    }
+
+    func formatXCTExpectFailure(group: XCTExpectFailureCaptureGroup) -> String {
+        let testSuite = group.testSuite
+        let testCase = group.testCase
+        let reason = group.reason
+        let expectedFailureText = "Expected failure in -[\(testSuite) \(testCase)]: \(reason)"
+        return colored ? Format.indent + TestStatus.expectedFail.foreground.Yellow + " " + expectedFailureText : Format.indent + TestStatus.expectedFail + " " + expectedFailureText
     }
 
     func formatRestartingTest(group: RestartingTestCaptureGroup) -> String {

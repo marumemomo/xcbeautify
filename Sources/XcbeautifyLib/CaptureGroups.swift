@@ -729,6 +729,28 @@ struct UIFailingTestCaptureGroup: CaptureGroup {
     }
 }
 
+struct XCTExpectFailureCaptureGroup: CaptureGroup {
+    static let outputType: OutputType = .testCase
+
+    /// Regular expression captured groups:
+    /// $1 = test suite
+    /// $2 = test case  
+    /// $3 = reason
+    static let regex = XCRegex(pattern: #"^Expected failure in -\[(.*?)\s(.*)\]: (.*)$"#)
+
+    let testSuite: String
+    let testCase: String
+    let reason: String
+
+    init?(groups: [String]) {
+        assert(groups.count >= 3)
+        guard let testSuite = groups[safe: 0], let testCase = groups[safe: 1], let reason = groups[safe: 2] else { return nil }
+        self.testSuite = testSuite
+        self.testCase = testCase
+        self.reason = reason
+    }
+}
+
 struct RestartingTestCaptureGroup: CaptureGroup {
     static let outputType: OutputType = .test
 

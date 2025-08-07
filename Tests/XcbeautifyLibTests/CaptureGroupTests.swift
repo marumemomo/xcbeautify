@@ -255,6 +255,16 @@ final class CaptureGroupTests: XCTestCase {
         XCTAssertNil(CompileErrorCaptureGroup.regex.captureGroups(for: input))
     }
 
+    func testMatchXCTExpectFailure() {
+        let input = #"Expected failure in -[XcbeautifyLibTests.ParserTests testSampleMethod]: Asynchronous wait failed: Exceeded timeout of 1 seconds, with unfulfilled expectations: "Expected condition".Reason: (Test timeout for demonstration)"#
+        let groups = XCTExpectFailureCaptureGroup.regex.captureGroups(for: input)
+        XCTAssertNotNil(groups)
+        XCTAssertEqual(groups?.count, 3)
+        XCTAssertEqual(groups?[0], "XcbeautifyLibTests.ParserTests")
+        XCTAssertEqual(groups?[1], "testSampleMethod")
+        XCTAssertEqual(groups?[2], #"Asynchronous wait failed: Exceeded timeout of 1 seconds, with unfulfilled expectations: "Expected condition".Reason: (Test timeout for demonstration)"#)
+    }
+
     func testMatchSwiftTestingTestRunStarted() {
         let input = "􀟈  Test run started."
         XCTAssertNil(SwiftTestingTestStartedCaptureGroup.regex.captureGroups(for: input))

@@ -8,7 +8,7 @@
 //
 
 import Foundation
-import XcbeautifyLib
+@testable import XcbeautifyLib
 import XCTest
 
 class JunitReporterTests: XCTestCase {
@@ -300,5 +300,30 @@ class JunitReporterTests: XCTestCase {
         let xml = String(data: data, encoding: .utf8)!
         let expectedXml = expectedParallelXml
         XCTAssertEqual(xml, expectedXml)
+    }
+
+    func testXCTExpectFailureJunitReport() throws {
+        let reporter = JunitReporter()
+        
+        // Add a test suite start
+        let testSuiteStarted = TestSuiteStartedCaptureGroup(groups: ["TestSuite", "2025-08-07 12:00:00.000"])!
+        reporter.add(captureGroup: testSuiteStarted)
+        
+        // Add an XCTExpectFailure
+        let expectFailure = XCTExpectFailureCaptureGroup(groups: ["TestClass", "testMethod", "Expected failure reason"])!
+        reporter.add(captureGroup: expectFailure)
+        
+        // Add a passing test case
+        let testPassed = TestCasePassedCaptureGroup(groups: ["TestClass", "testMethod", "1.025"])!
+        reporter.add(captureGroup: testPassed)
+        
+        let data = try reporter.generateReport()
+        let xml = String(data: data, encoding: .utf8)!
+        
+        // Verify the expected failure has boolean attribute and system-out element
+        XCTAssertTrue(xml.contains("expected-failure=\"true\""))
+        XCTAssertTrue(xml.contains("<system-out>Expected failure: Expected failure reason</system-out>"))
+        XCTAssertTrue(xml.contains("<testcase classname=\"TestClass\" name=\"testMethod\""))
+        XCTAssertTrue(xml.contains("tests=\"2\" failures=\"0\""))
     }
 }

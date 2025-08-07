@@ -231,6 +231,8 @@ package struct Formatter {
             return renderer.formatTouch(group: group)
         case let group as UIFailingTestCaptureGroup:
             return renderer.formatUIFailingTest(group: group)
+        case let group as XCTExpectFailureCaptureGroup:
+            return renderer.formatXCTExpectFailure(group: group)
         case let group as UndefinedSymbolLocationCaptureGroup:
             return renderer.formatUndefinedSymbolLocation(group: group)
         case let group as WillNotBeCodeSignedCaptureGroup:

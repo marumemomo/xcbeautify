@@ -36,6 +36,9 @@ package final class JunitReporter {
         case let group as RestartingTestCaptureGroup:
             let testCase = TestCase(classname: group.testSuite, name: group.testCase, time: nil, failure: .init(message: group.wholeMessage))
             components.append(.failingTest(testCase))
+        case let group as XCTExpectFailureCaptureGroup:
+            let testCase = TestCase(classname: group.testSuite, name: group.testCase, time: nil, expectedFailure: true, systemOut: "Expected failure: \(group.reason)")
+            components.append(.testCasePassed(testCase))
         case let group as TestCasePassedCaptureGroup:
             let testCase = TestCase(classname: group.suite, name: group.testCase, time: group.time)
             components.append(.testCasePassed(testCase))
@@ -193,22 +196,36 @@ private struct TestCase: Codable, DynamicNodeEncoding {
     let time: String?
     let failure: Failure?
     let skipped: Skipped?
+    let expectedFailure: Bool?
+    let systemOut: String?
 
-    init(classname: String, name: String, time: String?, failure: Failure? = nil, skipped: Skipped? = nil) {
+    init(classname: String, name: String, time: String?, failure: Failure? = nil, skipped: Skipped? = nil, expectedFailure: Bool? = nil, systemOut: String? = nil) {
         self.classname = classname
         self.name = name
         self.time = time
         self.failure = failure
         self.skipped = skipped
+        self.expectedFailure = expectedFailure
+        self.systemOut = systemOut
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case classname
+        case name
+        case time
+        case failure
+        case skipped
+        case expectedFailure = "expected-failure"
+        case systemOut = "system-out"
     }
 
     static func nodeEncoding(for key: any CodingKey) -> XMLEncoder.NodeEncoding {
         let key = CodingKeys(stringValue: key.stringValue)!
         switch key {
-        case .classname, .name, .time:
+        case .classname, .name, .time, .expectedFailure:
             return .attribute
 
-        case .failure, .skipped:
+        case .failure, .skipped, .systemOut:
             return .element
         }
     }

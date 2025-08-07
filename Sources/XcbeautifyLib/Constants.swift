@@ -26,6 +26,7 @@ enum TestStatus {
     static let completion = "▸"
     static let measure = "◷"
     static let skipped = "⊘"
+    static let expectedFail = "✓"
 }
 
 enum Symbol {
