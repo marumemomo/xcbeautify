@@ -736,7 +736,7 @@ struct XCTExpectFailureCaptureGroup: CaptureGroup {
     /// $1 = test suite
     /// $2 = test case  
     /// $3 = reason
-    static let regex = XCRegex(pattern: #"^Expected failure in -\[(.*?)\s(.*)\]: (.*)$"#)
+    static let regex = XCRegex(pattern: #".*Expected failure in -\[(.*?)\s(.*)\]: (.*)$"#)
 
     let testSuite: String
     let testCase: String
