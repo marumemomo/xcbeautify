@@ -25,6 +25,10 @@ package final class JunitReporter {
     // to match to the parent suite. We can still capture test success/failure
     // and output a generic result file.
     private var parallelComponents: [JunitComponent] = []
+    // Track test cases that have been recorded as expected failures to avoid duplicates
+    private var expectedFailureTestCases: Set<String> = []
+    // Map to store expected failure test cases for time updates
+    private var expectedFailureTestCaseIndices: [String: Int] = [:]
 
     package init() { }
 
@@ -38,10 +42,32 @@ package final class JunitReporter {
             components.append(.failingTest(testCase))
         case let group as XCTExpectFailureCaptureGroup:
             let testCase = TestCase(classname: group.testSuite, name: group.testCase, time: nil, expectedFailure: true, systemOut: "Expected failure: \(group.reason)")
+            let testKey = "\(group.testSuite).\(group.testCase)"
+            expectedFailureTestCases.insert(testKey)
+            // Store the index of this test case for later time updates
+            expectedFailureTestCaseIndices[testKey] = components.count
             components.append(.testCasePassed(testCase))
         case let group as TestCasePassedCaptureGroup:
-            let testCase = TestCase(classname: group.suite, name: group.testCase, time: group.time)
-            components.append(.testCasePassed(testCase))
+            let testKey = "\(group.suite).\(group.testCase)"
+            if expectedFailureTestCases.contains(testKey) {
+                // Update the time for the existing expected failure test case
+                if let index = expectedFailureTestCaseIndices[testKey],
+                   case .testCasePassed(var existingTestCase) = components[index] {
+                    existingTestCase = TestCase(
+                        classname: existingTestCase.classname,
+                        name: existingTestCase.name,
+                        time: group.time,
+                        failure: existingTestCase.failure,
+                        skipped: existingTestCase.skipped,
+                        expectedFailure: existingTestCase.expectedFailure,
+                        systemOut: existingTestCase.systemOut
+                    )
+                    components[index] = .testCasePassed(existingTestCase)
+                }
+            } else {
+                let testCase = TestCase(classname: group.suite, name: group.testCase, time: group.time)
+                components.append(.testCasePassed(testCase))
+            }
         case let group as TestCaseSkippedCaptureGroup:
             let testCase = TestCase(classname: group.suite, name: group.testCase, time: group.time, skipped: .init(message: nil))
             components.append(.skippedTest(testCase))

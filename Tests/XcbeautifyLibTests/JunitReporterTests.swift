@@ -313,9 +313,13 @@ class JunitReporterTests: XCTestCase {
         let expectFailure = XCTExpectFailureCaptureGroup(groups: ["TestClass", "testMethod", "Expected failure reason"])!
         reporter.add(captureGroup: expectFailure)
         
-        // Add a passing test case
+        // Add a passing test case for the same method (this simulates the real world where the same test appears twice)
         let testPassed = TestCasePassedCaptureGroup(groups: ["TestClass", "testMethod", "1.025"])!
         reporter.add(captureGroup: testPassed)
+        
+        // Add another regular passing test to make total count 2
+        let anotherTestPassed = TestCasePassedCaptureGroup(groups: ["TestClass", "testAnotherMethod", "0.5"])!
+        reporter.add(captureGroup: anotherTestPassed)
         
         let data = try reporter.generateReport()
         let xml = String(data: data, encoding: .utf8)!
